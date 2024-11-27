@@ -2,8 +2,8 @@
 
 header("Content-Type: application/json");
 
-require_once '../php/api.php';
-require_once '../php/db.php';
+require_once __DIR__ . "/api.php";
+require_once __DIR__ . "/db.php";
 
 
 if ($_SERVER["REQUEST_METHOD"] != "GET") {

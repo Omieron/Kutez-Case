@@ -1,7 +1,7 @@
 <?php
 
 header("Content-Type: application/json");
-$productDataPath = '../db/products.json'; 
+$productDataPath = __DIR__ . '/../db/products.json';
 
 function readDataFromDB(){
     global $productDataPath;  
@@ -18,7 +18,8 @@ function readDataFromDB(){
             return ['error' => 'Unable to read file'];  
         }
     } else {
-        return ['error' => 'JSON file cannot be found'];  
+        // return ['error' => 'JSON file cannot be found'];  
+        return ['error' => $productDataPath];
     }
 }
 

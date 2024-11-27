@@ -1,4 +1,4 @@
-const apiUrl = "../php/mainPage.php"
+const apiUrl = "/Kutez-Case/php/mainPage.php"
 
 // Event Handler for carousel
 document.addEventListener('DOMContentLoaded', function () {
@@ -49,6 +49,7 @@ function showList(){
             for (let item of response.data) {
                 createItem(item);
             }
+            console.log(response.data);
         }, error: function(response) {
             console.log(response)
         }
