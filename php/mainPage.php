@@ -1,29 +1,34 @@
 <?php
 
+require_once './api.php';
+
 header("Content-Type: application/json");
 $productDataPath = "../db/products.json"; 
-$data['price'] = getDataFromAPI(); // API CALISTIRIYOR
+
+$getPrice = getPrice();
+if($getPrice != null)
+    $data['price'] = $getPrice; // API CALISTIRIYOR
+else
+    $data['price'] = 0;
 
  if (file_exists($productDataPath)) {
      $db = file_get_contents($productDataPath); // Veriyi al
      if ($db) {
          $decodedProductData = json_decode($db, true); 
-         // JSON hatası olup olmadığını kontrol et
+
          if (json_last_error() == JSON_ERROR_NONE) {
-             // GET isteği kontrolü
-             // $method = $_SERVER["REQUEST_METHOD"];
-             // if ($method != "GET") {
-             //     http_response_code(404);
-             //     echo json_encode(["error" => "Invalid Request Method ($method)"]);
-             //     exit;
-             // }
-             $value = 4;
-             $pos = 0;
-             // $value = isset($_GET['value']) ? (int) $_GET['value'] : 4;
-             // $pos = isset($_GET['pos']) ? (int) $_GET['pos'] : 0;
-             $data['obj'] = getSelectedJsonData($pos, $value, $decodedProductData);
-             echo json_encode(['arr' => $data]);
-             exit;
+             
+             $method = $_SERVER["REQUEST_METHOD"];
+             if ($method != "GET") {
+                http_response_code(404);
+                echo json_encode(["error" => "Invalid Request Method ($method)"]);
+                exit;
+            } else {
+             
+                $data['obj'] = PopularityScore($decodedProductData);//getSelectedJsonData($pos, $value, $decodedProductData);
+                echo json_encode(['data' => $data]);
+                exit;
+             }
          } else {
              echo json_encode(['error' => 'Invalid JSON format']);
              exit;
@@ -37,48 +42,12 @@ $data['price'] = getDataFromAPI(); // API CALISTIRIYOR
      exit;
  }
 
-// Json dbden gelen veriyi arraye atıyor
-function getSelectedJsonData($position, $show, $dataJson) {
-     $result = [];
-     for ($i = $position; $i < ($show + $position); $i++) {
-         if (isset($dataJson[$i])) {
-             $result[$i] = [
-                 "name" => $dataJson[$i]["name"],
-                 "popularityScore" => $dataJson[$i]["popularityScore"],
-                 "weight" => $dataJson[$i]["weight"],
-                 "images" => $dataJson[$i]["images"]
-             ];
-         }
-     }
-    return $result;
-}
+function PopularityScore($dataJson){
+   
+    usort($dataJson, function ($a, $b) {
+        return $b['popularityScore'] <=> $a['popularityScore']; // Büyükten küçüğe sıralama
+    });
 
-// GOLD API data alıyor
-function getDataFromAPI(){
-    $apiKey = "goldapi-c1rg6osm3yf2ucc-io";
-    $symbol = "XAU";
-    $curr = "USD";
-    $date = "";
-    $myHeaders = array(
-        'x-access-token: ' . $apiKey,
-        'Content-Type: application/json'
-    );
-    $curl = curl_init();
-    $url = "https://www.goldapi.io/api/{$symbol}/{$curr}/{$date}";
-    curl_setopt_array($curl, array(
-        CURLOPT_URL => $url,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_HTTPHEADER => $myHeaders
-    ));
-    $response = curl_exec($curl);
-    $error = curl_error($curl);
-    curl_close($curl);
-    if ($error) {
-        return 'Error: ' . $error;
-    } else {
-        return $response;
-    }
+    return $dataJson;
 }
-
 
