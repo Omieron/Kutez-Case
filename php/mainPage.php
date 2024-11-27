@@ -1,53 +1,51 @@
 <?php
 
-require_once './api.php';
-
 header("Content-Type: application/json");
-$productDataPath = "../db/products.json"; 
 
-$getPrice = getPrice();
-if($getPrice != null)
-    $data['price'] = $getPrice; // API CALISTIRIYOR
-else
-    $data['price'] = 0;
+require_once '../php/api.php';
+require_once '../php/db.php';
 
- if (file_exists($productDataPath)) {
-     $db = file_get_contents($productDataPath); // Veriyi al
-     if ($db) {
-         $decodedProductData = json_decode($db, true); 
 
-         if (json_last_error() == JSON_ERROR_NONE) {
-             
-             $method = $_SERVER["REQUEST_METHOD"];
-             if ($method != "GET") {
-                http_response_code(404);
-                echo json_encode(["error" => "Invalid Request Method ($method)"]);
-                exit;
-            } else {
-             
-                $data['obj'] = PopularityScore($decodedProductData);//getSelectedJsonData($pos, $value, $decodedProductData);
-                echo json_encode(['data' => $data]);
-                exit;
-             }
-         } else {
-             echo json_encode(['error' => 'Invalid JSON format']);
-             exit;
-         }
-     } else {
-         echo json_encode(['error' => 'JSON file cannot be read']);
-         exit;
-     }
- } else {
-     echo json_encode(['error' => 'JSON file cannot be xxxs found']);
-     exit;
- }
+if ($_SERVER["REQUEST_METHOD"] != "GET") {
+    http_response_code(405);
+    echo json_encode(["error" => "Invalid Request Method (" . $_SERVER["REQUEST_METHOD"] . ")"]);
+    exit;
+} else {
 
-function PopularityScore($dataJson){
-   
+    $getPrice = getPrice();
+    $getDBData = readDataFromDB();
+
+    if($getPrice != null)
+        $getDBData = calculatePrice($getDBData, $getPrice);
+    else
+        $getDBData =calculatePrice($getDBData, 0);
+
+    $data = popularityScore($getDBData); // for popularity range use this
+    /*$data = priceScore($getDBData);*/ // for price range use this
+    echo json_encode(['data' => $data]);
+    exit;    
+}
+
+function popularityScore($dataJson){ 
     usort($dataJson, function ($a, $b) {
         return $b['popularityScore'] <=> $a['popularityScore']; // Büyükten küçüğe sıralama
     });
-
     return $dataJson;
+}
+
+function priceScore($dataJson){
+    usort($dataJson, function ($a, $b) {
+        return $b['price'] <=> $a['price']; // Büyükten küçüğe sıralama
+    });
+    return $dataJson;
+}
+
+function calculatePrice($objArr, $goldPrice){
+    foreach($objArr as &$obj){
+        $productPrice = ($obj['popularityScore'] + 1) * $obj['weight'] * $goldPrice;
+        $productPrice = number_format($productPrice, 2);
+        $obj['price'] = $productPrice;
+    }
+    return $objArr;
 }
 

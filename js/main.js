@@ -1,6 +1,6 @@
 const apiUrl = "../php/mainPage.php"
-let dataPrice = 0;
 
+// Event Handler for carousel
 document.addEventListener('DOMContentLoaded', function () {
     const container = document.getElementById('container');
     const leftBtn = document.getElementById('leftBtn');
@@ -45,9 +45,8 @@ function showList(){
         url : apiUrl,
         contentType: "application/json",
         success: function(response){
-            console.log(response.data['price']);
-            dataPrice = response.data['price'];
-            for (let item of response.data['obj']) {
+            console.log("Ürünlerin fiyatının 0 olma nedeni ya apiyi aldığım yer çökmüştür, ya da benim kullandığım kodun aylık kullanım hakkı bitmiştir!");
+            for (let item of response.data) {
                 createItem(item);
             }
         }, error: function(response) {
@@ -67,7 +66,7 @@ function createItem(obj){
                 <p>${obj['name']}</p>
             </div>
             <div class="price">
-                <p>$${calculatePrice(obj)} USD</p>
+                <p>$${obj['price']} USD</p>
             </div>
             <div class="colorsButton">
                 <nav class="colorRadioGroup">
@@ -132,9 +131,4 @@ function findNumberForStar(number){
         return Math.floor(number) + 0.50;
     else
         return Math.floor(number).toFixed(1);
-}
-
-function calculatePrice(obj){
-    var price = (obj['popularityScore'] + 1) * obj['weight'] * dataPrice;
-    return price.toFixed(2);
 }

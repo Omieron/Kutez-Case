@@ -16,7 +16,7 @@ function getPrice(){
 
 // GOLD API data alıyor
 function getDataFromAPI(){
-    $apiKey = "xgoldapi-c1rg6osm3yf2ucc-io";
+    $apiKey = "goldapi-3rqqhism3zuvk45-io"; // it is second api, remain 97 attempt
     $symbol = "XAU";
     $curr = "USD";
     $date = "";
